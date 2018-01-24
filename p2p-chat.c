@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <time.h>
 
@@ -60,13 +61,16 @@ int main(int argc, char *argv[]) {
     
     char send_buffer[255];
     int send_bytes = 0;
-    char receive_buffer[255] = "\0";
+    char receive_buffer[255];
     int receive_bytes;
     int retval;
 
     fd_set in;
     
     unsigned char max_fd = socket_file_descriptor;
+    
+    memset(receive_buffer, 0, sizeof(receive_buffer));
+    memset(send_buffer, 0, sizeof(send_buffer));
     
     while(1) {
         FD_ZERO(&in);
@@ -86,7 +90,7 @@ int main(int argc, char *argv[]) {
                 
                 if(strlen(receive_buffer) > 0) {
                     printf("Receive: %s\n", receive_buffer);
-                    receive_buffer[0] = 0;
+                    memset(receive_buffer, 0, sizeof(receive_buffer));
                 }
             }
             
@@ -96,6 +100,7 @@ int main(int argc, char *argv[]) {
                 fgets(send_buffer, sizeof(send_buffer), stdin);
                 send_buffer[strlen(send_buffer)-1] = 0;
                 send_bytes = sendto(socket_file_descriptor, send_buffer, sizeof(send_buffer), 0, (struct sockaddr *)&remote_socket_address, sizeof(struct sockaddr_in));
+                memset(send_buffer, 0, sizeof(send_buffer));
             }
         } else {
             printf("timeout\n");
